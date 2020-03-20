@@ -1,32 +1,34 @@
 import React, { useState, useEffect } from 'react'
-import { StyleSheet, Text, View, Alert, TouchableOpacity, AsyncStorage } from 'react-native'
+import {
+  AsyncStorage,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native'
 import Constants from 'expo-constants'
 
 export default function App () {
   const [ count, setCount ] = useState()
+  useEffect(loadCount)
 
-  useEffect(load)
-
-  function load () {
+  function loadCount () {
     AsyncStorage.getItem('COUNT')
       .then(count => {
         if (count === null) count = 0
-
         setCount(count)
       })
       .catch(error => console.error('Failed to load count:', error.message))
   }
 
-  function incrementCount () {
-    Alert.alert('+1 to the count!')
-
-    save(Number(count) + 1)
-  }
-
-  function save (count) {
+  function saveCount (count) {
     AsyncStorage.setItem('COUNT', String(count))
       .then(() => setCount(count))
       .catch(error => console.error('Failed to save count:', error.message))
+  }
+
+  function incrementCount () {
+    saveCount(Number(count) + 1)
   }
 
   return (
@@ -38,7 +40,7 @@ export default function App () {
         <TouchableOpacity
           style={styles.button}
           onPress={incrementCount}
-          accessibilityLabel="Touch me"
+          accessibilityLabel="Touch to increase count"
         >
           <Text style={styles.buttonText}>☝️</Text>
         </TouchableOpacity>
