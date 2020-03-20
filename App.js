@@ -1,58 +1,108 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import {
   AsyncStorage,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
+  AppState
 } from 'react-native'
 import Constants from 'expo-constants'
 
-export default function App () {
-  const [ count, setCount ] = useState()
-  useEffect(loadCount)
-
-  function loadCount () {
-    AsyncStorage.getItem('COUNT')
-      .then(count => {
-        if (count === null) count = 0
-        setCount(count)
-      })
-      .catch(error => console.error('Failed to load count:', error.message))
+export default class App extends React.Component {
+  state = {
+    count: 0,
+    appState: AppState.currentState
   }
 
-  function saveCount (count) {
-    AsyncStorage.setItem('COUNT', String(count))
-      .then(() => setCount(count))
-      .catch(error => console.error('Failed to save count:', error.message))
+  async componentDidMount () {
+    AppState.addEventListener('change', this.handleAppStateChange)
+    await this.checkDate()
   }
 
-  function incrementCount () {
-    saveCount(Number(count) + 1)
+  componentWillUnmount () {
+    AppState.removeEventListener('change', this.handleAppStateChange)
   }
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>Don't touch your face!{'\n'}🚫🤦</Text>
-      </View>
-      <View style={styles.bodyContainer}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={incrementCount}
-          accessibilityLabel="Touch to increase count"
-        >
-          <Text style={styles.buttonText}>☝️</Text>
-        </TouchableOpacity>
-        <Text style={styles.count}>
-          Count:{' '}
-          <Text style={{ color: 'red' }}>
-            {count}
+  handleAppStateChange = async (nextAppState) => {
+    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+      await this.checkDate()
+    }
+    this.setState({ appState: nextAppState })
+  }
+
+  checkDate = async (clicked) => {
+    let currentDate = this.getCurrentDate()
+
+    let savedDate = await AsyncStorage.getItem('STORED-DATE')
+    if (savedDate) {
+      // A new day has begun!
+      if (currentDate !== savedDate) {
+        // Store yesterday's count
+        await this.setYesterdaysCount(this.state.count)
+        // Update stored date
+        await this.updateDate(currentDate)
+        // Reset count to 1 if clicked or 0 if app reloaded
+        clicked ? await this.resetCount(1) : await this.resetCount(0)
+      } else if (clicked) {
+        // Update count
+        await this.incrementCount()
+      }
+    } else {
+      // Set initial stored date
+      await this.updateDate(currentDate)
+      // Set initial count to zero
+      await this.resetCount(0)
+    }
+  }
+
+  setYesterdaysCount = async (yesterdaysCount) => {
+    await AsyncStorage.setItem('YESTERDAYS-COUNT', String(yesterdaysCount))
+  }
+
+  updateDate = async (currentDate) => {
+    await AsyncStorage.setItem('STORED-DATE', String(currentDate))
+  }
+
+  resetCount = async (count) => {
+    await AsyncStorage.setItem('COUNT', String(count))
+    this.setState({ count })
+  }
+
+  incrementCount = async () => {
+    const count = this.state.count + 1
+    await AsyncStorage.setItem('COUNT', String(count))
+    this.setState({ count })
+  }
+
+  getCurrentDate = () => (new Date()).toDateString()
+
+  render () {
+    const { count } = this.state
+
+    return (
+      <View style={styles.container}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Don't touch your face!{'\n'}🚫🤦</Text>
+        </View>
+        <View style={styles.bodyContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => this.checkDate(true)}
+            accessibilityLabel="Touch to increase count"
+          >
+            <Text style={styles.buttonText}>☝️</Text>
+          </TouchableOpacity>
+          <Text style={styles.count}>
+            Count:{' '}
+            <Text style={{ color: 'red' }}>
+              {count}
+            </Text>
           </Text>
-        </Text>
+        </View>
       </View>
-    </View>
-  )
+    )
+  }
 }
 
 const styles = StyleSheet.create({
@@ -63,7 +113,7 @@ const styles = StyleSheet.create({
     paddingTop: Constants.statusBarHeight * 2
   },
   titleContainer: {
-    flex: 1
+    flex: 2
   },
   title: {
     textAlign: 'center',
@@ -86,6 +136,7 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
   count: {
-    fontSize: 24
+    fontSize: 24,
+    textAlign: 'center'
   }
 })
