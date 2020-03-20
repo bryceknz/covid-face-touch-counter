@@ -26,6 +26,10 @@
     "ios": {
       "supportsTablet": true
     },
+    "android": {
+      "package": "com.bryceknz.covidfacetouchcounter",
+      "versionCode": 1
+    },
     "description": "A way to track the number of times you touch your face each day.",
     "githubUrl": "https://github.com/bryceknz/covid-face-touch-counter"
   }
