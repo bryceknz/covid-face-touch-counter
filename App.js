@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { StyleSheet, Text, View, Alert, TouchableOpacity, AsyncStorage } from 'react-native'
+import Constants from 'expo-constants'
 
 export default function App () {
   const [ count, setCount ] = useState()
@@ -30,20 +31,24 @@ export default function App () {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Don't touch your face!{'\n'}🚫🤦</Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={incrementCount}
-        accessibilityLabel="Touch me"
-      >
-        <Text style={styles.buttonText}>☝️</Text>
-      </TouchableOpacity>
-      <Text style={styles.count}>
-        Count:{' '}
-        <Text style={{ color: 'red' }}>
-          {count}
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>Don't touch your face!{'\n'}🚫🤦</Text>
+      </View>
+      <View style={styles.bodyContainer}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={incrementCount}
+          accessibilityLabel="Touch me"
+        >
+          <Text style={styles.buttonText}>☝️</Text>
+        </TouchableOpacity>
+        <Text style={styles.count}>
+          Count:{' '}
+          <Text style={{ color: 'red' }}>
+            {count}
+          </Text>
         </Text>
-      </Text>
+      </View>
     </View>
   )
 }
@@ -51,18 +56,23 @@ export default function App () {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: Constants.statusBarHeight * 2
+  },
+  titleContainer: {
+    flex: 1
   },
   title: {
-    position: 'absolute',
-    top: '8%',
+    textAlign: 'center',
     fontSize: 36,
-    fontWeight: 'bold',
-    textAlign: 'center'
+    fontWeight: 'bold'
+  },
+  bodyContainer: {
+    flex: 3,
+    justifyContent: 'center'
   },
   button: {
-    position: 'absolute',
-    bottom: '30%',
     backgroundColor: 'blue',
     padding: 10,
     borderRadius: 16,
@@ -70,11 +80,10 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 72,
-    color: '#fff'
+    color: '#fff',
+    textAlign: 'center'
   },
   count: {
-    position: 'absolute',
-    bottom: '25%',
     fontSize: 24
   }
 })
