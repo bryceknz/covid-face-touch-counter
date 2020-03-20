@@ -1,10 +1,49 @@
-import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import React, { useState, useEffect } from 'react'
+import { StyleSheet, Text, View, Alert, TouchableOpacity, AsyncStorage } from 'react-native'
 
 export default function App () {
+  const [ count, setCount ] = useState()
+
+  useEffect(load)
+
+  function load () {
+    AsyncStorage.getItem('COUNT')
+      .then(count => {
+        if (count === null) count = 0
+
+        setCount(count)
+      })
+      .catch(error => console.error('Failed to load count:', error.message))
+  }
+
+  function incrementCount () {
+    Alert.alert('+1 to the count!')
+
+    save(Number(count) + 1)
+  }
+
+  function save (count) {
+    AsyncStorage.setItem('COUNT', String(count))
+      .then(() => setCount(count))
+      .catch(error => console.error('Failed to save count:', error.message))
+  }
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
+      <Text style={styles.title}>Don't touch your face!{'\n'}🚫🤦</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={incrementCount}
+        accessibilityLabel="Touch me"
+      >
+        <Text style={styles.buttonText}>☝️</Text>
+      </TouchableOpacity>
+      <Text style={styles.count}>
+        Count:{' '}
+        <Text style={{ color: 'red' }}>
+          {count}
+        </Text>
+      </Text>
     </View>
   )
 }
@@ -12,8 +51,30 @@ export default function App () {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center'
+    alignItems: 'center'
+  },
+  title: {
+    position: 'absolute',
+    top: '8%',
+    fontSize: 36,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
+  button: {
+    position: 'absolute',
+    bottom: '30%',
+    backgroundColor: 'blue',
+    padding: 10,
+    borderRadius: 16,
+    margin: 20
+  },
+  buttonText: {
+    fontSize: 72,
+    color: '#fff'
+  },
+  count: {
+    position: 'absolute',
+    bottom: '25%',
+    fontSize: 24
   }
 })
