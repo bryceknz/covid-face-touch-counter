@@ -12,6 +12,7 @@ import Constants from 'expo-constants'
 export default class App extends React.Component {
   state = {
     count: 0,
+    yesterdaysCount: null,
     appState: AppState.currentState
   }
 
@@ -58,10 +59,11 @@ export default class App extends React.Component {
 
   setYesterdaysCount = async (yesterdaysCount) => {
     await AsyncStorage.setItem('YESTERDAYS-COUNT', String(yesterdaysCount))
+    this.setState({ yesterdaysCount })
   }
 
   updateDate = async (currentDate) => {
-    await AsyncStorage.setItem('STORED-DATE', String(currentDate))
+    await AsyncStorage.setItem('STORED-DATE', currentDate)
   }
 
   resetCount = async (count) => {
@@ -78,7 +80,7 @@ export default class App extends React.Component {
   getCurrentDate = () => (new Date()).toDateString()
 
   render () {
-    const { count } = this.state
+    const { count, yesterdaysCount } = this.state
 
     return (
       <View style={styles.container}>
@@ -99,6 +101,7 @@ export default class App extends React.Component {
               {count}
             </Text>
           </Text>
+          {yesterdaysCount !== null && <Text style={styles.yesterday}>Yesterday's count: {yesterdaysCount}</Text>}
         </View>
       </View>
     )
@@ -137,6 +140,9 @@ const styles = StyleSheet.create({
   },
   count: {
     fontSize: 24,
+    textAlign: 'center'
+  },
+  yesterday: {
     textAlign: 'center'
   }
 })
